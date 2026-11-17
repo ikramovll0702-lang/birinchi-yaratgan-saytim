@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}Boshqaruv Paneli{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Welcome Header & Quick Action Buttons -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-6 rounded-3xl text-white shadow-xl shadow-blue-900/10">
+        <div>
+            <div class="flex items-center gap-2 text-blue-300 text-xs font-semibold uppercase tracking-wider mb-1">
+                <i class="fas fa-university"></i>
+                <span>Universitet Boshqaruv Markazi</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                Assalomu alaykum, {{ current_user.full_name }}!
+            </h1>
+            <p class="text-slate-300 text-sm mt-1">
+                Bugun {{ current_date }} | Akademik yil: 2025-2026 (Kuzgi semestr)
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="/students/new" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md flex items-center gap-2 transition">
+                <i class="fas fa-user-plus"></i>
+                <span>Yangi talaba</span>
+            </a>
+            <a href="/students/import/excel" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold backdrop-blur border border-white/10 flex items-center gap-2 transition">
+                <i class="fas fa-file-excel text-emerald-400"></i>
+                <span>Excel import</span>
+            </a>
+            <a href="/attendance" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold backdrop-blur border border-white/10 flex items-center gap-2 transition">
+                <i class="fas fa-calendar-check text-sky-400"></i>
+                <span>Davomat</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Key Statistics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- 1. Total Students -->
+        <div class="stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Jami Talabalar</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.total_students }} nafar</h3>
+                <p class="text-xs text-emerald-600 mt-1 font-medium flex items-center gap-1">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ stats.active_students }} nafar faol o'qimoqda</span>
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+        </div>
+
+        <!-- 2. Faculties & Groups -->
+        <div class="stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fakultet va Guruhlar</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.faculties_count }} / {{ stats.groups_count }}</h3>
+                <p class="text-xs text-slate-500 mt-1">
+                    {{ stats.specialties_count }} ta ta'lim yo'nalishi
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="fas fa-sitemap"></i>
+            </div>
+        </div>
+
+        <!-- 3. University GPA -->
+        <div class="stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">O'rtacha GPA</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ stats.average_gpa }} <span class="text-sm font-normal text-slate-500">/ 4.00</span></h3>
+                <p class="text-xs text-blue-600 mt-1 font-medium flex items-center gap-1">
+                    <i class="fas fa-star text-amber-500"></i>
+                    <span>Kredit-modul tizimi</span>
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="fas fa-award"></i>
+            </div>
+        </div>
+
+        <!-- 4. Attendance Warnings -->
+        <div class="stat-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">74+ soat Qoldirganlar</p>
+                <h3 class="text-2xl font-bold text-rose-600 mt-1">{{ stats.warning_students_count }} nafar</h3>
+                <p class="text-xs text-rose-500 mt-1 font-medium">
+                    <a href="/attendance/warnings" class="hover:underline flex items-center gap-1">
+                        <span>Chora ko'rish kerak</span>
+                        <i class="fas fa-arrow-right text-[10px]"></i>
+                    </a>
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="fas fa-user-clock"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Faculty Distribution Bar Chart -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">Fakultetlar kesimida talabalar soni</h2>
+                    <p class="text-xs text-slate-500">Bakalavriat va Magistratura talabalari</p>
+                </div>
+                <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium">2025-2026</span>
+            </div>
+            <div class="h-64">
+                <canvas id="facultyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Course Level Doughnut Chart -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">Kurslar bo'yicha taqsimot</h2>
+                    <p class="text-xs text-slate-500">1-kursdan 4-kursgacha</p>
+                </div>
+            </div>
+            <div class="h-64 flex items-center justify-center">
+                <canvas id="courseChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Row: Financial overview & Recent Students -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Finance & Payment breakdown -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h2 class="text-base font-bold text-slate-900 mb-1">To'lov shakli va Shartnomalar</h2>
+            <p class="text-xs text-slate-500 mb-4">Grant va kontrakt statistikasi</p>
+            
+            <div class="h-48 mb-4 flex items-center justify-center">
+                <canvas id="paymentChart"></canvas>
+            </div>
+
+            <div class="space-y-3 pt-3 border-t border-slate-100 text-xs">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500">Davlat granti:</span>
+                    <span class="font-bold text-emerald-600">{{ stats.grant_count }} nafar</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500">To'lov-kontrakt:</span>
+                    <span class="font-bold text-indigo-600">{{ stats.contract_count }} nafar</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500">Jami tushum (Kontrakt):</span>
+                    <span class="font-bold text-slate-900">{{ "{:,.0f}".format(finance.total_received) }} so'm</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500">Jami qarzdorlik:</span>
+                    <span class="font-bold text-rose-600">{{ "{:,.0f}".format(finance.total_debt) }} so'm</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Students or Quick Student Table -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">So'nggi ro'yxatga olingan talabalar</h2>
+                        <p class="text-xs text-slate-500">Bazada mavjud faol talabalar</p>
+                    </div>
+                    <a href="/students" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                        <span>Barchasini ko'rish</span>
+                        <i class="fas fa-chevron-right text-[10px]"></i>
+                    </a>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-y border-slate-200">
+                            <tr>
+                                <th class="py-2.5 px-3 font-semibold">Talaba</th>
+                                <th class="py-2.5 px-3 font-semibold">Guruh</th>
+                                <th class="py-2.5 px-3 font-semibold">Yo'nalish</th>
+                                <th class="py-2.5 px-3 font-semibold">GPA</th>
+                                <th class="py-2.5 px-3 font-semibold">To'lov turi</th>
+                                <th class="py-2.5 px-3 font-semibold text-right">Amal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for st in recent_students %}
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="py-2.5 px-3 font-medium text-slate-900 flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+                                        {{ st.first_name[0] }}{{ st.last_name[0] }}
+                                    </div>
+                                    <div>
+                                        <a href="/students/{{ st.id }}" class="hover:text-blue-600 font-semibold block">
+                                            {{ st.full_name }}
+                                        </a>
+                                        <span class="text-[10px] text-slate-400 font-mono">{{ st.student_code }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-2.5 px-3 text-slate-600 font-medium">
+                                    {{ st.group_name }}
+                                </td>
+                                <td class="py-2.5 px-3 text-slate-500">
+                                    {{ st.specialty_name }}
+                                </td>
+                                <td class="py-2.5 px-3">
+                                    <span class="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                                        {{ st.gpa }}
+                                    </span>
+                                </td>
+                                <td class="py-2.5 px-3">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold
+                                        {% if st.payment_form == 'Davlat granti' %}bg-emerald-100 text-emerald-700{% else %}bg-indigo-100 text-indigo-700{% endif %}">
+                                        {{ st.payment_form }}
+                                    </span>
+                                </td>
+                                <td class="py-2.5 px-3 text-right">
+                                    <a href="/students/{{ st.id }}" class="text-blue-600 hover:text-blue-800 p-1">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="pt-4 mt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <span>Ko'rsatilmoqda: 5 ta eng so'nggi talaba</span>
+                <a href="/students/new" class="text-blue-600 font-semibold hover:underline">
+                    + Yangi talaba kiritish
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Faculty Chart
+    const facultyCtx = document.getElementById('facultyChart').getContext('2d');
+    new Chart(facultyCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ faculty_chart_labels | tojson }},
+            datasets: [{
+                label: 'Talabalar soni',
+                data: {{ faculty_chart_data | tojson }},
+                backgroundColor: ['#2563eb', '#4f46e5', '#06b6d4'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Course Level Doughnut Chart
+    const courseCtx = document.getElementById('courseChart').getContext('2d');
+    new Chart(courseCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['1-kurs', '2-kurs', '3-kurs', '4-kurs'],
+            datasets: [{
+                data: {{ course_chart_data | tojson }},
+                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+            }
+        }
+    });
+
+    // Payment Form Pie Chart
+    const paymentCtx = document.getElementById('paymentChart').getContext('2d');
+    new Chart(paymentCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Davlat granti', 'To\'lov-shartnoma'],
+            datasets: [{
+                data: [{{ stats.grant_count }}, {{ stats.contract_count }}],
+                backgroundColor: ['#10b981', '#6366f1'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+            }
+        }
+    });
+</script>
+{% endblock %}
+

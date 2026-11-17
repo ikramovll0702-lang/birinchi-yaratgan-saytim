@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Talabalar Ro'yxati{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Talabalar Bazasi</h1>
+            <p class="text-sm text-slate-500">Universitet talabalarining to'liq ma'lumotlar bazasi va monitoringi</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="/students/export/excel?{{ request.query_params }}" 
+               class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm flex items-center gap-2 transition">
+                <i class="fas fa-file-excel"></i>
+                <span>Excelga eksport</span>
+            </a>
+            <a href="/students/import/excel" 
+               class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-xl shadow-sm flex items-center gap-2 transition">
+                <i class="fas fa-file-import"></i>
+                <span>Excel import</span>
+            </a>
+            <a href="/students/new" 
+               class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm flex items-center gap-2 transition">
+                <i class="fas fa-plus"></i>
+                <span>Yangi talaba</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <form method="GET" action="/students" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <!-- Search -->
+            <div class="sm:col-span-2">
+                <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Qidiruv</label>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                    <input type="text" name="search" value="{{ search or '' }}" placeholder="F.I.Sh, Talaba ID, JSHSHIR..." 
+                           class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <!-- Faculty -->
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Fakultet</label>
+                <select name="faculty_id" id="facultySelect" onchange="updateSpecialtiesAndGroups(this.value, 'specialtySelect', 'groupSelect')" 
+                        class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500">
+                    <option value="">Barcha fakultetlar</option>
+                    {% for f in faculties %}
+                    <option value="{{ f.id }}" {% if faculty_id == f.id %}selected{% endif %}>{{ f.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Group -->
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Guruh</label>
+                <select name="group_id" id="groupSelect" 
+                        class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500">
+                    <option value="">Barcha guruhlar</option>
+                    {% for g in groups %}
+                    <option value="{{ g.id }}" {% if group_id == g.id %}selected{% endif %}>{{ g.name }} ({{ g.course_level }}-kurs)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Course Level -->
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Kurs</label>
+                <select name="course_level" 
+                        class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500">
+                    <option value="">Barcha kurslar</option>
+                    <option value="1" {% if course_level == 1 %}selected{% endif %}>1-kurs</option>
+                    <option value="2" {% if course_level == 2 %}selected{% endif %}>2-kurs</option>
+                    <option value="3" {% if course_level == 3 %}selected{% endif %}>3-kurs</option>
+                    <option value="4" {% if course_level == 4 %}selected{% endif %}>4-kurs</option>
+                </select>
+            </div>
+
+            <!-- Payment Form -->
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">To'lov shakli</label>
+                <select name="payment_form" 
+                        class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500">
+                    <option value="">Barchasi</option>
+                    <option value="Davlat granti" {% if payment_form == 'Davlat granti' %}selected{% endif %}>Davlat granti</option>
+                    <option value="To'lov-shartnoma" {% if payment_form == "To'lov-shartnoma" %}selected{% endif %}>To'lov-shartnoma</option>
+                </select>
+            </div>
+
+            <!-- Status -->
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Holati</label>
+                <select name="status" 
+                        class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500">
+                    <option value="">Barchasi</option>
+                    <option value="O'qimoqda" {% if status == "O'qimoqda" %}selected{% endif %}>O'qimoqda</option>
+                    <option value="Akademik ta'til" {% if status == "Akademik ta'til" %}selected{% endif %}>Akademik ta'til</option>
+                    <option value="Chetlashtirilgan" {% if status == 'Chetlashtirilgan' %}selected{% endif %}>Chetlashtirilgan</option>
+                    <option value="Bitirgan" {% if status == 'Bitirgan' %}selected{% endif %}>Bitirgan</option>
+                </select>
+            </div>
+
+            <!-- Submit & Reset Buttons -->
+            <div class="sm:col-span-2 lg:col-span-3 flex items-end gap-2">
+                <button type="submit" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow transition">
+                    <i class="fas fa-filter mr-1"></i> Filtrni qo'llash
+                </button>
+                <a href="/students" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-lg transition">
+                    Tozalash
+                </a>
+                <span class="text-xs text-slate-500 ml-auto self-center">
+                    Jami topildi: <b>{{ total_count }}</b> nafar talaba
+                </span>
+            </div>
+        </form>
+    </div>
+
+    <!-- Students Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                    <tr>
+                        <th class="py-3 px-4 font-semibold">№</th>
+                        <th class="py-3 px-4 font-semibold">Talaba</th>
+                        <th class="py-3 px-4 font-semibold">Guruh & Yo'nalish</th>
+                        <th class="py-3 px-4 font-semibold">Fakultet</th>
+                        <th class="py-3 px-4 font-semibold">Kurs / Shakl</th>
+                        <th class="py-3 px-4 font-semibold">To'lov</th>
+                        <th class="py-3 px-4 font-semibold">GPA</th>
+                        <th class="py-3 px-4 font-semibold">Holati</th>
+                        <th class="py-3 px-4 font-semibold text-right">Amallar</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for st in students %}
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-3 px-4 text-slate-400 font-mono">{{ loop.index }}</td>
+                        <td class="py-3 px-4 font-medium text-slate-900">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center flex-shrink-0">
+                                    {{ st.first_name[0] }}{{ st.last_name[0] }}
+                                </div>
+                                <div>
+                                    <a href="/students/{{ st.id }}" class="hover:text-blue-600 font-semibold text-slate-900 block">
+                                        {{ st.full_name }}
+                                    </a>
+                                    <div class="flex items-center gap-2 text-[10px] text-slate-400">
+                                        <span class="font-mono bg-slate-100 px-1 rounded">{{ st.student_code }}</span>
+                                        {% if st.phone %}<span>{{ st.phone }}</span>{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="font-semibold text-slate-800 block">{{ st.group_name }}</span>
+                            <span class="text-[11px] text-slate-500">{{ st.specialty_name }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-slate-600">
+                            {{ st.faculty_name }}
+                        </td>
+                        <td class="py-3 px-4 text-slate-600">
+                            <span class="font-semibold">{{ st.course_level }}-kurs</span>
+                            <span class="block text-[10px] text-slate-400">{{ st.education_type }}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold
+                                {% if st.payment_form == 'Davlat granti' %}badge-grant{% else %}badge-contract{% endif %}">
+                                {{ st.payment_form }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="font-bold px-2 py-0.5 rounded text-xs
+                                {% if st.gpa >= 3.5 %}bg-emerald-50 text-emerald-700
+                                {% elif st.gpa >= 2.5 %}bg-blue-50 text-blue-700
+                                {% else %}bg-amber-50 text-amber-700{% endif %}">
+                                {{ st.gpa }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold
+                                {% if st.status == 'O''qimoqda' %}badge-active
+                                {% elif st.status == 'Akademik ta''til' %}badge-leave
+                                {% else %}badge-expelled{% endif %}">
+                                {{ st.status }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <div class="flex items-center justify-end gap-1">
+                                <a href="/students/{{ st.id }}" title="Ko'rish" class="p-1.5 text-slate-400 hover:text-blue-600 rounded hover:bg-slate-100">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="/students/{{ st.id }}/edit" title="Tahrirlash" class="p-1.5 text-slate-400 hover:text-amber-600 rounded hover:bg-slate-100">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="/students/{{ st.id }}/certificate.pdf" title="Ma'lumotnoma PDF" target="_blank" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded hover:bg-slate-100">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="py-8 text-center text-slate-400 text-sm">
+                            <i class="fas fa-user-slash text-2xl mb-2 block"></i>
+                            Kiritilgan parametrlar bo'yicha talaba topilmadi
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

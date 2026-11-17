@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Davomat Qaydnomasi{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Davomat Qaydnomasi</h1>
+            <p class="text-sm text-slate-500">Mashg'ulotlar bo'yicha talabalar davomatini elektron belgilash</p>
+        </div>
+
+        <a href="/attendance/warnings" class="px-4 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold rounded-xl border border-rose-200 flex items-center gap-2 transition">
+            <i class="fas fa-exclamation-triangle text-rose-500"></i>
+            <span>74+ soat ogohlantirishlar</span>
+        </a>
+    </div>
+
+    <!-- Attendance Filters -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <form method="GET" action="/attendance" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 items-end">
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Guruh *</label>
+                <select name="group_id" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white font-bold text-blue-700">
+                    {% for g in groups %}
+                    <option value="{{ g.id }}" {% if selected_group and selected_group.id == g.id %}selected{% endif %}>
+                        {{ g.name }} ({{ g.course_level }}-kurs)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Fan *</label>
+                <select name="subject_id" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white">
+                    {% for s in subjects %}
+                    <option value="{{ s.id }}" {% if selected_subject and selected_subject.id == s.id %}selected{% endif %}>
+                        {{ s.code }} - {{ s.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Sana *</label>
+                <input type="date" name="date" value="{{ selected_date }}" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Juftlik *</label>
+                <select name="pair_number" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white">
+                    <option value="1" {% if selected_pair == 1 %}selected{% endif %}>1-juftlik (09:00 - 10:20)</option>
+                    <option value="2" {% if selected_pair == 2 %}selected{% endif %}>2-juftlik (10:30 - 11:50)</option>
+                    <option value="3" {% if selected_pair == 3 %}selected{% endif %}>3-juftlik (12:30 - 13:50)</option>
+                    <option value="4" {% if selected_pair == 4 %}selected{% endif %}>4-juftlik (14:00 - 15:20)</option>
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow transition">
+                    Qaydnoma ochish
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if attendance_list %}
+    <!-- Quick Action Bar -->
+    <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-xs">
+        <div class="flex items-center gap-2">
+            <span class="text-slate-500">Guruh: <b>{{ selected_group.name }}</b></span>
+            <span class="text-slate-300">|</span>
+            <span class="text-slate-500">Sana: <b>{{ selected_date }}</b> ({{ selected_pair }}-juftlik)</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="setAllAttendance('Bor')" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg font-semibold transition">
+                <i class="fas fa-check-double mr-1"></i> Barchasi: Bor
+            </button>
+            <button onclick="saveAllAttendance()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow transition">
+                <i class="fas fa-save mr-1"></i> Saqlash
+            </button>
+        </div>
+    </div>
+
+    <!-- Attendance Sheet -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                    <tr>
+                        <th class="py-3 px-4">№</th>
+                        <th class="py-3 px-4">Talaba F.I.Sh.</th>
+                        <th class="py-3 px-4">Talaba ID</th>
+                        <th class="py-3 px-4 text-center">Davomat Holati</th>
+                        <th class="py-3 px-4">Izoh</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for row in attendance_list %}
+                    <tr class="hover:bg-slate-50 transition" id="att-row-{{ row.student_id }}">
+                        <td class="py-3 px-4 text-slate-400 font-mono">{{ loop.index }}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">
+                            {{ row.full_name }}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-slate-500">{{ row.student_code }}</td>
+                        
+                        <td class="py-3 px-4 text-center">
+                            <div class="inline-flex rounded-xl p-1 bg-slate-100 gap-1">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="status_{{ row.student_id }}" value="Bor" 
+                                           {% if row.status == 'Bor' %}checked{% endif %} class="hidden peer">
+                                    <span class="px-3 py-1 rounded-lg text-xs font-semibold block transition peer-checked:bg-emerald-600 peer-checked:text-white text-slate-600 hover:text-slate-900">
+                                        Bor
+                                    </span>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="status_{{ row.student_id }}" value="Sababli" 
+                                           {% if row.status == 'Sababli' %}checked{% endif %} class="hidden peer">
+                                    <span class="px-3 py-1 rounded-lg text-xs font-semibold block transition peer-checked:bg-amber-500 peer-checked:text-white text-slate-600 hover:text-slate-900">
+                                        Sababli
+                                    </span>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="status_{{ row.student_id }}" value="Sababsiz" 
+                                           {% if row.status == 'Sababsiz' %}checked{% endif %} class="hidden peer">
+                                    <span class="px-3 py-1 rounded-lg text-xs font-semibold block transition peer-checked:bg-rose-600 peer-checked:text-white text-slate-600 hover:text-slate-900">
+                                        Sababsiz
+                                    </span>
+                                </label>
+                            </div>
+                        </td>
+
+                        <td class="py-3 px-4">
+                            <input type="text" id="notes_{{ row.student_id }}" value="{{ row.notes or '' }}" placeholder="Qo'shimcha izoh..."
+                                   class="w-full px-3 py-1 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const currentGroupId = {{ selected_group.id if selected_group else 0 }};
+const currentSubjectId = {{ selected_subject.id if selected_subject else 0 }};
+const currentDate = "{{ selected_date }}";
+const currentPair = {{ selected_pair or 1 }};
+
+function setAllAttendance(statusVal) {
+    document.querySelectorAll(`input[type="radio"][value="${statusVal}"]`).forEach(r => {
+        r.checked = true;
+    });
+}
+
+async function saveAllAttendance() {
+    const radioInputs = document.querySelectorAll('input[type="radio"]:checked');
+    let count = 0;
+    for (const radio of radioInputs) {
+        const studentId = radio.name.replace('status_', '');
+        const notes = document.getElementById(`notes_${studentId}`).value;
+        const status = radio.value;
+
+        await fetch('/attendance/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                student_id: parseInt(studentId),
+                subject_id: currentSubjectId,
+                group_id: currentGroupId,
+                date: currentDate,
+                pair_number: currentPair,
+                status: status,
+                hours: 2,
+                notes: notes
+            })
+        });
+        count++;
+    }
+    showToast(`Barcha ${count} ta talaba davomati muvaffaqiyatli saqlandi!`, "success");
+}
+</script>
+{% endblock %}
+

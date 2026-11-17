@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Fanlar va O'qituvchilar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">O'quv Fanlari va Professor-O'qituvchilar</h1>
+            <p class="text-sm text-slate-500">O'quv rejasidagi fanlar, kredit-soatlar va kafedra o'qituvchilari</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="openModal('newSubjectModal')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow transition flex items-center gap-2">
+                <i class="fas fa-plus"></i>
+                <span>Yangi fan qo'shish</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Subjects Table -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <h3 class="text-base font-bold text-slate-900 mb-3 flex items-center justify-between">
+            <span>O'quv Rejasidagi Fanlar</span>
+            <span class="text-xs text-slate-400 font-normal">Kredit-modul tizimi (ECTS)</span>
+        </h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-y border-slate-200">
+                    <tr>
+                        <th class="py-2.5 px-3">Fan kodi & Nomi</th>
+                        <th class="py-2.5 px-3">Kafedra / Fakultet</th>
+                        <th class="py-2.5 px-3 text-center">Semestr</th>
+                        <th class="py-2.5 px-3 text-center">Kredit (ECTS)</th>
+                        <th class="py-2.5 px-3 text-center">Jami soat</th>
+                        <th class="py-2.5 px-3 text-center">Ma'ruza</th>
+                        <th class="py-2.5 px-3 text-center">Amaliy</th>
+                        <th class="py-2.5 px-3 text-center">Laborat.</th>
+                        <th class="py-2.5 px-3 text-center">Mustaqil</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for s in subjects %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-2.5 px-3 font-medium text-slate-800">
+                            <span class="font-bold text-slate-900">{{ s.name }}</span>
+                            <span class="block text-[10px] text-slate-400 font-mono">{{ s.code }}</span>
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <span class="text-slate-700 font-medium">{{ s.department_name }}</span>
+                            <span class="block text-[10px] text-slate-400">{{ s.faculty_name }}</span>
+                        </td>
+                        <td class="py-2.5 px-3 text-center font-semibold text-slate-700">{{ s.semester }}</td>
+                        <td class="py-2.5 px-3 text-center">
+                            <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold">
+                                {{ s.credits }} ECTS
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3 text-center font-bold text-slate-800">{{ s.total_hours }}</td>
+                        <td class="py-2.5 px-3 text-center text-slate-600">{{ s.lecture_hours }}</td>
+                        <td class="py-2.5 px-3 text-center text-slate-600">{{ s.practice_hours }}</td>
+                        <td class="py-2.5 px-3 text-center text-slate-600">{{ s.lab_hours }}</td>
+                        <td class="py-2.5 px-3 text-center text-slate-600">{{ s.independent_hours }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Teachers Table -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mt-8">
+        <h3 class="text-base font-bold text-slate-900 mb-3 flex items-center justify-between">
+            <span>Professor-O'qituvchilar</span>
+            <span class="text-xs text-slate-400 font-normal">Jami {{ teachers | length }} nafar</span>
+        </h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-y border-slate-200">
+                    <tr>
+                        <th class="py-2.5 px-3">F.I.Sh.</th>
+                        <th class="py-2.5 px-3">Kafedra</th>
+                        <th class="py-2.5 px-3">Ilmiy daraja / Lavozim</th>
+                        <th class="py-2.5 px-3">Telefon</th>
+                        <th class="py-2.5 px-3">Email</th>
+                        <th class="py-2.5 px-3 text-center">Holati</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for t in teachers %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-2.5 px-3 font-semibold text-slate-900">{{ t.full_name }}</td>
+                        <td class="py-2.5 px-3 text-slate-600">{{ t.department_name }}</td>
+                        <td class="py-2.5 px-3">
+                            <span class="px-2 py-0.5 rounded bg-purple-50 text-purple-700 font-medium">
+                                {{ t.academic_degree }}
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3 text-slate-600 font-mono">{{ t.phone or '-' }}</td>
+                        <td class="py-2.5 px-3 text-slate-600">{{ t.email or '-' }}</td>
+                        <td class="py-2.5 px-3 text-center">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-700">
+                                {{ t.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: New Subject -->
+<div id="newSubjectModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 class="text-base font-bold text-slate-900">Yangi Fan Qo'shish</h3>
+            <button onclick="closeModal('newSubjectModal')" class="text-slate-400 hover:text-slate-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form action="/academics/subjects/new" method="POST" class="space-y-3 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">Fan kodi *</label>
+                <input type="text" name="code" required placeholder="Masalan: SE401" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white font-mono">
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">Fan nomi *</label>
+                <input type="text" name="name" required placeholder="Masalan: Bulutli hisoblashlar" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">Kafedra *</label>
+                <select name="department_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                    {% for d in departments %}
+                    <option value="{{ d.id }}">{{ d.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-semibold text-slate-700 uppercase mb-1">Kredit (ECTS) *</label>
+                    <input type="number" name="credits" value="5" min="1" max="30" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 uppercase mb-1">Semestr *</label>
+                    <input type="number" name="semester" value="1" min="1" max="10" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                </div>
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+                <div>
+                    <label class="block font-semibold text-slate-700 uppercase mb-1">Ma'ruza</label>
+                    <input type="number" name="lecture_hours" value="30" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 uppercase mb-1">Amaliy</label>
+                    <input type="number" name="practice_hours" value="30" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 uppercase mb-1">Laborat.</label>
+                    <input type="number" name="lab_hours" value="10" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 uppercase mb-1">Mustaqil</label>
+                    <input type="number" name="independent_hours" value="70" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3">
+                <button type="button" onclick="closeModal('newSubjectModal')" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-semibold">Bekor qilish</button>
+                <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl font-semibold shadow">Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

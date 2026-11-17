@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Fakultet va Kafedralar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Fakultetlar va Kafedralar</h1>
+            <p class="text-sm text-slate-500">Universitetning tuzilmaviy bo'linmalari va kafedralari</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="/faculties/groups" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-xl shadow transition flex items-center gap-2">
+                <i class="fas fa-users"></i>
+                <span>Guruhlarni ko'rish</span>
+            </a>
+            <button onclick="openModal('newFacultyModal')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow transition flex items-center gap-2">
+                <i class="fas fa-plus"></i>
+                <span>Yangi fakultet</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Faculty Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {% for f in faculties %}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between hover:border-blue-400 transition">
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold font-mono">
+                        {{ f.code }}
+                    </span>
+                    <span class="text-xs text-slate-400">
+                        {{ f.specialties_count }} ta yo'nalish
+                    </span>
+                </div>
+                <h3 class="text-base font-bold text-slate-900 leading-snug">{{ f.name }}</h3>
+                <p class="text-xs text-slate-500">{{ f.description or 'Fakultet haqida qisqacha ma''lumot' }}</p>
+                <div class="pt-3 border-t border-slate-100 text-xs space-y-1.5 text-slate-600">
+                    <p><b>Dekan:</b> {{ f.dean_name or 'Tayinlanmagan' }}</p>
+                    <p><b>Bog'lanish:</b> {{ f.phone or '+998 71 200 00 00' }}</p>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                <div class="space-x-3 text-slate-500">
+                    <span><b>{{ f.groups_count }}</b> guruh</span>
+                    <span><b>{{ f.students_count }}</b> talaba</span>
+                </div>
+                <a href="/students?faculty_id={{ f.id }}" class="text-blue-600 font-semibold hover:underline">
+                    Talabalar <i class="fas fa-arrow-right text-[10px]"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Departments & Specialties Tables -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        <!-- Departments -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="text-base font-bold text-slate-900 mb-3 flex items-center justify-between">
+                <span>Kafedralar</span>
+                <span class="text-xs text-slate-400 font-normal">Jami {{ departments | length }} ta</span>
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 uppercase border-y border-slate-200">
+                        <tr>
+                            <th class="py-2.5 px-3">Kafedra nomi</th>
+                            <th class="py-2.5 px-3">Fakultet</th>
+                            <th class="py-2.5 px-3">Kafedra mudiri</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for d in departments %}
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-2.5 px-3 font-semibold text-slate-800">{{ d.name }}</td>
+                            <td class="py-2.5 px-3 text-slate-500">{{ d.faculty_name }}</td>
+                            <td class="py-2.5 px-3 text-slate-600">{{ d.head_name or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Specialties -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="text-base font-bold text-slate-900 mb-3 flex items-center justify-between">
+                <span>Ta'lim Yo'nalishlari / Mutaxassisliklar</span>
+                <span class="text-xs text-slate-400 font-normal">Jami {{ specialties | length }} ta</span>
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 uppercase border-y border-slate-200">
+                        <tr>
+                            <th class="py-2.5 px-3">Kodi & Nomi</th>
+                            <th class="py-2.5 px-3">Daraja</th>
+                            <th class="py-2.5 px-3 text-center">Guruhlar</th>
+                            <th class="py-2.5 px-3 text-center">Talabalar</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for sp in specialties %}
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-2.5 px-3 font-medium text-slate-800">
+                                <span class="font-bold text-slate-900">{{ sp.name }}</span>
+                                <span class="block text-[10px] text-slate-400 font-mono">{{ sp.code }}</span>
+                            </td>
+                            <td class="py-2.5 px-3 text-slate-600">{{ sp.degree }} ({{ sp.duration_years }} yil)</td>
+                            <td class="py-2.5 px-3 text-center font-semibold text-slate-700">{{ sp.groups_count }}</td>
+                            <td class="py-2.5 px-3 text-center font-semibold text-blue-600">{{ sp.students_count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: New Faculty -->
+<div id="newFacultyModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 class="text-base font-bold text-slate-900">Yangi Fakultet Qo'shish</h3>
+            <button onclick="closeModal('newFacultyModal')" class="text-slate-400 hover:text-slate-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form action="/faculties/new" method="POST" class="space-y-3 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">Fakultet kodi (qisqartma) *</label>
+                <input type="text" name="code" required placeholder="Masalan: RTSI" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">Fakultet to'liq nomi *</label>
+                <input type="text" name="name" required placeholder="Fakultet nomi" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">Dekan F.I.Sh.</label>
+                <input type="text" name="dean_name" placeholder="Prof. ..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">Telefon</label>
+                <input type="text" name="phone" placeholder="+998 71 ..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+            </div>
+            <div class="flex justify-end gap-2 pt-3">
+                <button type="button" onclick="closeModal('newFacultyModal')" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-semibold">Bekor qilish</button>
+                <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl font-semibold shadow">Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

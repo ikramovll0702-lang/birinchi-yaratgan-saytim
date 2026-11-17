@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}{% if student %}Talabani tahrirlash{% else %}Yangi talaba qo'shish{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
+                {% if student %}Talabani Tahrirlash: {{ student.full_name }}{% else %}Yangi Talaba Qo'shish{% endif %}
+            </h1>
+            <p class="text-sm text-slate-500">Talaba anketasi va o'quv ma'lumotlarini to'ldiring</p>
+        </div>
+        <a href="/students" class="px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg">
+            <i class="fas fa-arrow-left mr-1"></i> Ro'yxatga qaytish
+        </a>
+    </div>
+
+    {% if error %}
+    <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-center gap-3">
+        <i class="fas fa-exclamation-circle text-rose-500 text-lg"></i>
+        <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{% if student %}/students/{{ student.id }}/edit{% else %}/students/new{% endif %}" class="space-y-6">
+        <!-- 1. Shaxsiy ma'lumotlar -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
+                <i class="fas fa-user text-blue-600"></i>
+                <span>1. Shaxsiy Ma'lumotlar</span>
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Familiya *</label>
+                    <input type="text" name="last_name" required value="{{ student.last_name if student else '' }}"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Ism *</label>
+                    <input type="text" name="first_name" required value="{{ student.first_name if student else '' }}"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Otasining ismi</label>
+                    <input type="text" name="middle_name" value="{{ student.middle_name if student else '' }}"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">JSHSHIR (PINFL)</label>
+                    <input type="text" name="pinfl" maxlength="14" value="{{ student.pinfl if student else '' }}" placeholder="14 xonali raqam"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Pasport seriya / raqam</label>
+                    <input type="text" name="passport_number" value="{{ student.passport_number if student else '' }}" placeholder="AA 1234567"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Tug'ilgan sana</label>
+                    <input type="date" name="birth_date" value="{{ student.birth_date if student else '2004-01-01' }}"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Jinsi</label>
+                    <select name="gender" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                        <option value="Erkak" {% if student and student.gender == 'Erkak' %}selected{% endif %}>Erkak</option>
+                        <option value="Ayol" {% if student and student.gender == 'Ayol' %}selected{% endif %}>Ayol</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Telefon raqami</label>
+                    <input type="text" name="phone" value="{{ student.phone if student else '+9989' }}"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Elektron pochta</label>
+                    <input type="email" name="email" value="{{ student.email if student else '' }}"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Ota-onasi telefoni</label>
+                    <input type="text" name="parent_phone" value="{{ student.parent_phone if student else '' }}"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Viloyat</label>
+                    <input type="text" name="region" value="{{ student.region if student else '' }}" placeholder="Masalan: Samarqand viloyati"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Tuman / Shahar</label>
+                    <input type="text" name="district" value="{{ student.district if student else '' }}" placeholder="Masalan: Urgut tumani"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Doimiy yashash manzili</label>
+                    <input type="text" name="address" value="{{ student.address if student else '' }}" placeholder="Ko'cha, xonadon raqami"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. O'qish ma'lumotlari -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
+                <i class="fas fa-university text-indigo-600"></i>
+                <span>2. O'quv Ma'lumotlari</span>
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Fakultet *</label>
+                    <select name="faculty_id" id="facultySelect" required onchange="updateSpecialtiesAndGroups(this.value, 'specialtySelect', 'groupSelect')"
+                            class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                        {% for f in faculties %}
+                        <option value="{{ f.id }}" {% if student and student.faculty_id == f.id %}selected{% endif %}>{{ f.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Yo'nalish / Mutaxassislik *</label>
+                    <select name="specialty_id" id="specialtySelect" required
+                            class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                        {% for sp in specialties %}
+                        <option value="{{ sp.id }}" {% if student and student.specialty_id == sp.id %}selected{% endif %}>{{ sp.code }} - {{ sp.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Akademik Guruh *</label>
+                    <select name="group_id" id="groupSelect" required
+                            class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500">
+                        {% for g in groups %}
+                        <option value="{{ g.id }}" {% if student and student.group_id == g.id %}selected{% endif %}>{{ g.name }} ({{ g.course_level }}-kurs)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Kursi (1-4) *</label>
+                    <select name="course_level" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                        {% for c in [1, 2, 3, 4] %}
+                        <option value="{{ c }}" {% if student and student.course_level == c %}selected{% endif %}>{{ c }}-kurs</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Ta'lim turi</label>
+                    <select name="education_degree" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                        <option value="Bakalavr" {% if student and student.education_degree == 'Bakalavr' %}selected{% endif %}>Bakalavr</option>
+                        <option value="Magistr" {% if student and student.education_degree == 'Magistr' %}selected{% endif %}>Magistr</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Ta'lim shakli</label>
+                    <select name="education_type" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                        <option value="Kunduzgi" {% if student and student.education_type == 'Kunduzgi' %}selected{% endif %}>Kunduzgi</option>
+                        <option value="Kechki" {% if student and student.education_type == 'Kechki' %}selected{% endif %}>Kechki</option>
+                        <option value="Sirtqi" {% if student and student.education_type == 'Sirtqi' %}selected{% endif %}>Sirtqi</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">To'lov shakli *</label>
+                    <select name="payment_form" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                        <option value="To'lov-shartnoma" {% if student and student.payment_form == "To'lov-shartnoma" %}selected{% endif %}>To'lov-shartnoma</option>
+                        <option value="Davlat granti" {% if student and student.payment_form == 'Davlat granti' %}selected{% endif %}>Davlat granti</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Holati</label>
+                    <select name="status" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                        <option value="O'qimoqda" {% if student and student.status == "O'qimoqda" %}selected{% endif %}>O'qimoqda</option>
+                        <option value="Akademik ta'til" {% if student and student.status == "Akademik ta'til" %}selected{% endif %}>Akademik ta'til</option>
+                        <option value="Chetlashtirilgan" {% if student and student.status == 'Chetlashtirilgan' %}selected{% endif %}>Chetlashtirilgan</option>
+                        <option value="Bitirgan" {% if student and student.status == 'Bitirgan' %}selected{% endif %}>Bitirgan</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Qabul yili</label>
+                    <input type="number" name="admission_year" value="{{ student.admission_year if student else 2024 }}"
+                           class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex items-center justify-end gap-3">
+            <a href="/students" class="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+                Bekor qilish
+            </a>
+            <button type="submit" class="px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/25 transition flex items-center gap-2">
+                <i class="fas fa-save"></i>
+                <span>Saqlash</span>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

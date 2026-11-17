@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}To'lov-Shartnomalar va Moliya{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">To'lov-Shartnomalar va Moliya</h1>
+            <p class="text-sm text-slate-500">Talabalar to'lov-shartnomalari monitoringi va to'lovlar hisobi</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="openModal('recordPaymentModal')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow transition flex items-center gap-2">
+                <i class="fas fa-plus-circle"></i>
+                <span>To'lov qabul qilish</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Financial Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kutilayotgan tushum</p>
+            <h3 class="text-xl font-bold text-slate-900 mt-1">{{ "{:,.0f}".format(overview.total_expected or 0) }} <span class="text-xs font-normal text-slate-500">so'm</span></h3>
+            <p class="text-xs text-slate-400 mt-1">{{ overview.total_contracts or 0 }} ta shartnoma bo'yicha</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">To'langan summa</p>
+            <h3 class="text-xl font-bold text-emerald-600 mt-1">{{ "{:,.0f}".format(overview.total_received or 0) }} <span class="text-xs font-normal text-slate-500">so'm</span></h3>
+            <p class="text-xs text-emerald-600 mt-1 font-medium">{{ overview.fully_paid_count or 0 }} ta to'liq to'langan</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Qarzdorlik miqdori</p>
+            <h3 class="text-xl font-bold text-rose-600 mt-1">{{ "{:,.0f}".format(overview.total_debt or 0) }} <span class="text-xs font-normal text-slate-500">so'm</span></h3>
+            <p class="text-xs text-rose-500 mt-1 font-medium">{{ overview.debtor_count or 0 }} nafar qarzdor talaba</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Shartnoma bajarilishi</p>
+            {% set pct = ((overview.total_received / overview.total_expected * 100) if overview.total_expected and overview.total_expected > 0 else 0) | round(1) %}
+            <h3 class="text-xl font-bold text-blue-600 mt-1">{{ pct }}%</h3>
+            <div class="w-full bg-slate-100 rounded-full h-2 mt-2 overflow-hidden">
+                <div class="bg-blue-600 h-2 rounded-full" style="width: {{ pct }}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <form method="GET" action="/finance" class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Qidiruv</label>
+                <input type="text" name="search" value="{{ search or '' }}" placeholder="Talaba F.I.Sh., shartnoma raqami..." 
+                       class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white">
+            </div>
+            <div>
+                <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Holati</label>
+                <select name="status" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white">
+                    <option value="">Barchasi</option>
+                    <option value="Qarzdor" {% if status == 'Qarzdor' %}selected{% endif %}>Qarzdor</option>
+                    <option value="Qisman to'langan" {% if status == "Qisman to'langan" %}selected{% endif %}>Qisman to'langan</option>
+                    <option value="To'langan" {% if status == "To'langan" %}selected{% endif %}>To'langan</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="submit" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold shadow">
+                    Filtrlash
+                </button>
+                <a href="/finance" class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium">Tozalash</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Contracts Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                    <tr>
+                        <th class="py-3 px-4">Shartnoma №</th>
+                        <th class="py-3 px-4">Talaba F.I.Sh.</th>
+                        <th class="py-3 px-4">Fakultet & Guruh</th>
+                        <th class="py-3 px-4 text-right">Shartnoma summasi</th>
+                        <th class="py-3 px-4 text-right">To'langan</th>
+                        <th class="py-3 px-4 text-right">Qoldiq qarzdorlik</th>
+                        <th class="py-3 px-4 text-center">Holat</th>
+                        <th class="py-3 px-4 text-right">Amal</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for c in contracts %}
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-3 px-4 font-mono font-bold text-blue-700">{{ c.contract_number }}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">
+                            <a href="/students/{{ c.student_id }}" class="hover:text-blue-600">
+                                {{ c.student_name }}
+                            </a>
+                            <span class="block text-[10px] text-slate-400 font-mono">{{ c.student_code }}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="font-medium text-slate-800">{{ c.group_name }}</span>
+                            <span class="block text-[10px] text-slate-400">{{ c.faculty_name }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-right font-semibold text-slate-700">
+                            {{ "{:,.0f}".format(c.total_amount) }} so'm
+                        </td>
+                        <td class="py-3 px-4 text-right font-bold text-emerald-600">
+                            {{ "{:,.0f}".format(c.paid_amount) }} so'm
+                        </td>
+                        <td class="py-3 px-4 text-right font-bold {% if c.remaining_amount > 0 %}text-rose-600{% else %}text-emerald-600{% endif %}">
+                            {{ "{:,.0f}".format(c.remaining_amount) }} so'm
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold
+                                {% if c.status == 'To''langan' %}bg-emerald-100 text-emerald-700
+                                {% elif c.status == 'Qisman to''langan' %}bg-amber-100 text-amber-700
+                                {% else %}bg-rose-100 text-rose-700{% endif %}">
+                                {{ c.status }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <button onclick="openPayModal({{ c.id }}, {{ c.student_id }}, '{{ c.student_name }}', {{ c.remaining_amount }})" 
+                                    class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded text-[11px] font-bold">
+                                To'lov
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="py-8 text-center text-slate-400">
+                            Shartnomalar topilmadi
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Record Payment -->
+<div id="recordPaymentModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 class="text-base font-bold text-slate-900">To'lovni Qayd Etish</h3>
+            <button onclick="closeModal('recordPaymentModal')" class="text-slate-400 hover:text-slate-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form action="/finance/payment" method="POST" class="space-y-3 text-xs">
+            <input type="hidden" name="contract_id" id="modalContractId" value="1">
+            <input type="hidden" name="student_id" id="modalStudentId" value="1">
+            
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">Talaba</label>
+                <input type="text" id="modalStudentName" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-800">
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">To'lov summasi (so'm) *</label>
+                <input type="number" step="1000" name="amount" id="modalAmount" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white font-bold text-blue-700">
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">To'lov sanasi *</label>
+                <input type="date" name="payment_date" required value="{{ current_date_iso }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">To'lov usuli</label>
+                <select name="payment_method" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                    <option value="Bank o'tkazmasi">Bank o'tkazmasi</option>
+                    <option value="Payme">Payme</option>
+                    <option value="Click">Click</option>
+                    <option value="Uzum Bank">Uzum Bank</option>
+                    <option value="Universitet kassasi (Naqd)">Universitet kassasi (Naqd)</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 uppercase mb-1">Kvitansiya / Chek raqami</label>
+                <input type="text" name="receipt_number" placeholder="Masalan: REC-99214" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white font-mono">
+            </div>
+
+            <div class="flex justify-end gap-2 pt-3">
+                <button type="button" onclick="closeModal('recordPaymentModal')" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-semibold">Bekor qilish</button>
+                <button type="submit" class="px-5 py-2 bg-emerald-600 text-white rounded-xl font-semibold shadow">To'lovni tasdiqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openPayModal(contractId, studentId, studentName, remainingAmount) {
+    document.getElementById('modalContractId').value = contractId;
+    document.getElementById('modalStudentId').value = studentId;
+    document.getElementById('modalStudentName').value = studentName;
+    document.getElementById('modalAmount').value = remainingAmount > 0 ? remainingAmount : 6000000;
+    openModal('recordPaymentModal');
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Dars Jadvali{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">O'quv Mashg'ulotlari Dars Jadvali</h1>
+            <p class="text-sm text-slate-500">Guruhlar kesimida haftalik dars jadvallari va xonalar taqsimoti</p>
+        </div>
+
+        <!-- Group Selector -->
+        <form method="GET" action="/academics/timetable" class="flex items-center gap-2">
+            <label class="text-xs font-semibold text-slate-600">Guruh:</label>
+            <select name="group_id" onchange="this.form.submit()" class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl font-bold text-blue-700 shadow-sm focus:ring-2 focus:ring-blue-500">
+                {% for g in groups %}
+                <option value="{{ g.id }}" {% if selected_group and selected_group.id == g.id %}selected{% endif %}>
+                    {{ g.name }} ({{ g.course_level }}-kurs)
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    {% if selected_group %}
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between text-xs">
+        <div>
+            <span class="text-slate-400">Tanlangan guruh:</span>
+            <span class="font-bold text-slate-900 ml-1">{{ selected_group.name }}</span>
+            <span class="text-slate-500 ml-2">({{ selected_group.specialty_name }}, {{ selected_group.course_level }}-kurs)</span>
+        </div>
+        <div>
+            <span class="text-slate-400">O'quv yili:</span>
+            <span class="font-semibold text-slate-700 ml-1">{{ selected_group.academic_year }}</span>
+        </div>
+    </div>
+
+    <!-- Timetable Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% set days = [
+            (1, 'Dushanba'),
+            (2, 'Seshanba'),
+            (3, 'Chorshanba'),
+            (4, 'Payshanba'),
+            (5, 'Juma'),
+            (6, 'Shanba')
+        ] %}
+
+        {% set pair_times = {
+            1: '09:00 - 10:20',
+            2: '10:30 - 11:50',
+            3: '12:30 - 13:50',
+            4: '14:00 - 15:20'
+        } %}
+
+        {% for day_num, day_name in days %}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div class="bg-slate-900 text-white px-4 py-2.5 font-bold text-xs flex items-center justify-between">
+                <span>{{ day_name }}</span>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider">{{ day_num }}-kun</span>
+            </div>
+
+            <div class="p-3 space-y-2.5 flex-1">
+                {% set day_lessons = timetable | selectattr('day_of_week', 'equalto', day_num) | list %}
+                {% if day_lessons %}
+                    {% for lesson in day_lessons %}
+                    <div class="p-2.5 rounded-xl border border-slate-100 bg-slate-50/70 hover:bg-blue-50/50 hover:border-blue-200 transition space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                                {{ lesson.pair_number }}-juftlik ({{ pair_times.get(lesson.pair_number, '') }})
+                            </span>
+                            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded
+                                {% if lesson.lesson_type == 'Ma''ruza' %}bg-purple-100 text-purple-700
+                                {% elif lesson.lesson_type == 'Amaliy' %}bg-emerald-100 text-emerald-700
+                                {% else %}bg-amber-100 text-amber-700{% endif %}">
+                                {{ lesson.lesson_type }}
+                            </span>
+                        </div>
+                        <h4 class="text-xs font-bold text-slate-900 leading-snug">{{ lesson.subject_name }}</h4>
+                        <div class="text-[11px] text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100">
+                            <span>👨‍🏫 {{ lesson.teacher_name }}</span>
+                            <span class="font-mono font-semibold text-slate-700">🚪 {{ lesson.room_number }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="py-6 text-center text-slate-300 text-xs">
+                        <i class="fas fa-calendar-times text-xl mb-1 block"></i>
+                        Darslar mavjud emas
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

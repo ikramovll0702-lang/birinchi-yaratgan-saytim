@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}74+ Soat Dars Qoldirgan Talabalar{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-rose-600 text-xs font-bold uppercase tracking-wider mb-1">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>HEMIS Standarti: Nazorat va Chora Ko'rish</span>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
+                74+ Soat Sababsiz Dars Qoldirgan Talabalar
+            </h1>
+            <p class="text-sm text-slate-500">
+                Oliy ta'lim me'yoriy qoidalariga muvofiq, semestr davomida 74 soatdan ortiq sababsiz dars qoldirgan talabalar
+            </p>
+        </div>
+
+        <a href="/attendance" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-2">
+            <i class="fas fa-arrow-left"></i>
+            <span>Davomat jurnaliga qaytish</span>
+        </a>
+    </div>
+
+    <!-- Alert Box -->
+    <div class="p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs space-y-2">
+        <div class="flex items-center gap-2 font-bold text-sm text-rose-900">
+            <i class="fas fa-shield-alt text-rose-600 text-base"></i>
+            <span>Muhim eslatma:</span>
+        </div>
+        <p>
+            O'zbekiston Respublikasi Vazirlar Mahkamasining oliy ta'lim muassasalarida o'quv jarayonini kredit-modul tizimida tashkil etish tartibi to'g'risidagi Nizomiga binoan, 
+            bir semestrda sababsiz dars qoldirishlar hajmi 74 akademik soatdan oshgan talabalar talabalar safidan chetlashtirish yoki akademik ta'tilga chiqarish uchun dekanat kengashiga taqdim etiladi.
+        </p>
+    </div>
+
+    <!-- Warnings Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                    <tr>
+                        <th class="py-3 px-4">Talaba F.I.Sh.</th>
+                        <th class="py-3 px-4">Talaba ID</th>
+                        <th class="py-3 px-4">Fakultet</th>
+                        <th class="py-3 px-4">Guruh</th>
+                        <th class="py-3 px-4 text-center">Sababsiz soat</th>
+                        <th class="py-3 px-4 text-center">Sababli soat</th>
+                        <th class="py-3 px-4 text-center">Jami qoldirilgan</th>
+                        <th class="py-3 px-4">Telefon</th>
+                        <th class="py-3 px-4 text-right">Amallar</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for w in warnings %}
+                    <tr class="hover:bg-rose-50/40 transition">
+                        <td class="py-3 px-4 font-bold text-slate-900">
+                            <a href="/students/{{ w.id }}" class="hover:text-blue-600">
+                                {{ w.full_name }}
+                            </a>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-slate-500">{{ w.student_code }}</td>
+                        <td class="py-3 px-4 text-slate-600">{{ w.faculty_name }}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-800">{{ w.group_name }}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 animate-pulse">
+                                {{ w.unexcused_hours }} soat
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-center text-slate-600">{{ w.excused_hours }} soat</td>
+                        <td class="py-3 px-4 text-center font-bold text-slate-800">{{ w.total_missed_hours }} soat</td>
+                        <td class="py-3 px-4 text-slate-600 font-mono">{{ w.phone or '-' }}</td>
+                        <td class="py-3 px-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="/students/{{ w.id }}" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-semibold">
+                                    Profil
+                                </a>
+                                <a href="/students/{{ w.id }}/edit" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-[11px] font-semibold">
+                                    Chora ko'rish
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="py-10 text-center text-slate-400">
+                            <i class="fas fa-check-circle text-3xl text-emerald-500 mb-2 block"></i>
+                            Ajoyib! Ayni paytda 74 soatdan ortiq dars qoldirgan talabalar mavjud emas.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
