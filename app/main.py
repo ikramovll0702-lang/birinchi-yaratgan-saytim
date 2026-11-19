@@ -2,6 +2,7 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.database import init_db
 from app.seed_data_auto import ensure_initial_seed
@@ -51,6 +52,19 @@ app.include_router(finance_router)
 app.include_router(dormitory_router)
 app.include_router(student_portal_router)
 app.include_router(api_router)
+
+# PWA Manifest and Service Worker
+@app.get("/manifest.json", include_in_schema=False)
+async def get_manifest():
+    return FileResponse(os.path.join(STATIC_DIR, "manifest.json"), media_type="application/manifest+json")
+
+@app.get("/sw.js", include_in_schema=False)
+async def get_sw():
+    return FileResponse(
+        os.path.join(STATIC_DIR, "sw.js"),
+        media_type="application/javascript",
+        headers={"Service-Worker-Allowed": "/"}
+    )
 
 # Custom 404 handler
 @app.exception_handler(404)

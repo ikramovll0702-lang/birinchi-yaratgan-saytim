@@ -154,9 +154,32 @@ Swagger API interaktiv hujjatlari:
 
 ---
 
+## 📱 & 🖥️ Ilova Sifatida Ishlatish (PWA va Desktop Ilova)
+
+Loyiha ham mobil qurilmalar (Android, iOS), ham shaxsiy kompyuterlar (Windows, macOS) uchun mustaqil ilova ko'rinishida foydalanishga to'liq moslashtirilgan:
+
+### 1. 🖥️ Windows Desktop Dasturi (Mahalliy kompyuterda)
+Tizimni brauzer ochmasdan, alohida mustaqil Windows dasturi (desktop ilova) sifatida ishlatishingiz mumkin:
+- **Tezkor ishga tushirish:** `HEMIS-Ilova.bat` faylini ikki marta bosing.
+- **Yoki terminaldan:**
+  ```bash
+  python desktop_app.py
+  ```
+Dastur orqa fonda serverni ishga tushiradi va zamonaviy **Microsoft Edge Chromium WebView2** motorida alohida chiroyli dastur oynasini ochadi.
+
+### 2. 📱 Mobil va Desktop PWA (Progressive Web App)
+Sayt ommaviy hostingga (masalan, Railway) yuklanganda yoki lokal ishlatilganda, uni telefon va kompyuterga to'liq ilova qilib o'rnatish mumkin:
+- **Kompyuterda (Chrome, Edge):** Sayt ochilganda yuqori paneldagi **"Ilovani o'rnatish"** tugmasini bosing yoki brauzer manzil satridagi o'rnatish ikonkasini bosing.
+- **Telefonda (Android / iOS):**
+  - Android (Chrome): Saytga kirganda pastda "HEMIS ilovasini o'rnatish" taklifi chiqadi yoki brauzer menyusidan **"Ilovani o'rnatish" (Install app)** tanlanadi.
+  - iPhone (Safari): **"Ulashish" (Share)** tugmasi -> **"Bosh ekranga qo'shish" (Add to Home Screen)** tanlanadi.
+- **Afzalliklari:** Ilova telefonda va kompyuterda alohida belgi (ikonka) bilan paydo bo'ladi, brauzer qidiruv satrisiz to'liq ekranli ilova sifatida ishlaydi, kesh orqali tez yuklanadi.
+
+---
+
 ## 🧪 Avtomatlashtirilgan Testlar Natijasi
 
-Tizim barcha modullarni (Autentifikatsiya, Talabalar CRUD, HEMIS GPA formulasi, Davomat, Moliya, PDF va Excel generatsiyasi, HTTP API lar) qamrab oluvchi 25 ta avtomatlashtirilgan test bilan ta'minlangan.
+Tizim barcha modullarni (Autentifikatsiya, Talabalar CRUD, HEMIS GPA formulasi, Davomat, Moliya, PDF va Excel generatsiyasi, PWA servis worker va manifest, HTTP API lar) qamrab oluvchi 28 ta avtomatlashtirilgan test bilan ta'minlangan.
 
 Testlarni ishga tushirish:
 ```bash
