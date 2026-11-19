@@ -2,7 +2,20 @@ import sqlite3
 import os
 from contextlib import contextmanager
 
-DB_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "university.db")
+DB_FILE = os.environ.get(
+    "DB_PATH",
+    os.environ.get(
+        "DATABASE_PATH",
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "university.db")
+    )
+)
+# Ensure the parent directory for DB exists (e.g. for mounted volumes like /data)
+db_parent = os.path.dirname(os.path.abspath(DB_FILE))
+if db_parent and not os.path.exists(db_parent):
+    try:
+        os.makedirs(db_parent, exist_ok=True)
+    except Exception:
+        pass
 
 def get_db_connection():
     conn = sqlite3.connect(DB_FILE, timeout=30.0)

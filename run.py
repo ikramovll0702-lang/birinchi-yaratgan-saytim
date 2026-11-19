@@ -3,11 +3,14 @@ import os
 import sys
 
 def main():
+    host = os.environ.get("HOST", "0.0.0.0")
+    port = int(os.environ.get("PORT", 8000))
+
     print("=" * 65)
     print("  HEMIS - OLIY TA'LIM TALABALARINI BOSHQARISH AXBOROT TIZIMI")
     print("=" * 65)
-    print("  Server manzili:      http://127.0.0.1:8000")
-    print("  Hujjatlar (Swagger): http://127.0.0.1:8000/docs")
+    print(f"  Server manzili:      http://{host}:{port}")
+    print(f"  Hujjatlar (Swagger): http://{host}:{port}/docs")
     print("-" * 65)
     print("  FOYDALANUVCHILAR VA PAROLLAR:")
     print("  1. Administrator:   admin       / admin123")
@@ -17,8 +20,7 @@ def main():
     print("=" * 65)
     print("  Server ishga tushirilmoqda...\n")
 
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=False)
+    uvicorn.run("app.main:app", host=host, port=port, reload=False)
 
 if __name__ == "__main__":
     main()
-

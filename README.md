@@ -85,17 +85,39 @@ Oliy ta'lim muassasalari (OTM) uchun talabalar haqidagi ma'lumotlarni to'liq raq
 
 ---
 
-## 🛠️ Texnologik Stek
+## ☁️ Railway.app Hostingga Joylashtirish (Deploy)
 
-- **Backend:** Python 3.13, FastAPI (zamonaviy, yuqori unumdor asinxron veb freymvork).
-- **Server:** Uvicorn (ASGI web server).
-- **Ma'lumotlar bazasi:** SQLite 3 (ACID tranzaksiyalari, xorijiy kalitlar tekshiruvi, tezkor indekslar).
-- **Shablonlar:** Jinja2 (server-side rendering, modulli arxitektura).
-- **Frontend / UI:** Tailwind CSS (CDN), FontAwesome 6 ikonkalari, Chart.js (interaktiv grafiklar).
-- **Hujjatlar generatsiyasi:** 
-  - `reportlab` (vektorli yuqori sifatli PDF ma'lumotnomalar, transkriptlar, guvohnomalar).
-  - `openpyxl` (stilli va formulali Excel jadvallarini eksport va import qilish).
-- **Testlash:** Pytest (barcha modullar va API lar uchun avtomatlashtirilgan testlar).
+Loyiha Railway platformasida 100% avtomatik ishga tushish uchun to'liq moslashtirildi (`Procfile`, `railway.json`, `nixpacks.toml`, `Dockerfile`, `PORT` dinamik port bog'lanishi).
+
+### 1-qadam: Railway'ga ulanish
+1. [railway.app](https://railway.app/) saytiga kiring va GitHub hisobingiz bilan kiring (Login with GitHub).
+2. **"+ New Project"** tugmasini bosing.
+3. **"Deploy from GitHub repo"** ni tanlang.
+4. Repozitoriyangizni tanlang: **`ikramovll0702-lang/birinchi-yaratgan-saytim`**.
+
+### 2-qadam: Deploy
+Railway avtomatik tarzda repozitoriydagi `railway.json` va `Procfile` ni taniydi va Python muhitini o'rnatib, ilovani ishga tushiradi. Hech qanday qo'shimcha buyruq yozish shart emas!
+
+### 3-qadam: Domen olish (Public URL)
+1. Railway loyiha panelida servisingiz ustiga bosing.
+2. **"Settings"** bo'limiga o'ting.
+3. **"Networking"** -> **"Generate Domain"** tugmasini bosing.
+4. Sizga `https://birinchi-yaratgan-saytim-production.up.railway.app` kabi ommaviy bepul HTTPS domen beriladi!
+
+### 4-qadam (Ixtiyoriy): Persistent Volume (Ma'lumotlar bazasi saqlanishi)
+Agar konteyner qayta ishga tushganda ham kiritilgan talabalar va baholar o'chib ketmasligini xohlasangiz:
+1. Railway servisining **"Volumes"** bo'limiga o'ting -> **"Add Volume"** bosing.
+2. Mount path ga `/data` deb yozing.
+3. **"Variables"** bo'limiga o'tib, quyidagi o'zgaruvchini qo'shing:
+   - `DB_PATH` = `/data/university.db`
+
+### Muhit o'zgaruvchilari (Environment Variables):
+| O'zgaruvchi | Standart qiymat | Tavsif |
+|---|---|---|
+| `PORT` | `8000` | Railway avtomatik o'rnatadi |
+| `HOST` | `0.0.0.0` | Barcha tarmoq interfeyslarida tinglash |
+| `SECRET_KEY` | `hemis_secure_session_key_uz_2026_super_secret` | Sessiya cookie larini shifrlash kaliti |
+| `DB_PATH` | `./university.db` | SQLite ma'lumotlar bazasi fayli joylashuvi |
 
 ---
 
@@ -112,7 +134,7 @@ Oliy ta'lim muassasalari (OTM) uchun talabalar haqidagi ma'lumotlarni to'liq raq
 
 ---
 
-## 💻 Tizimni Ishga Tushirish
+## 💻 Mahalliy Kompyuterda Ishga Tushirish
 
 ### 1. Talablarni o'rnatish:
 ```bash
@@ -123,10 +145,6 @@ python -m pip install -r requirements.txt
 ```bash
 python run.py
 ```
-yoki to'g'ridan-to'g'ri uvicorn orqali:
-```bash
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
 
 Brauzerda quyidagi manzilni oching:
 👉 **http://127.0.0.1:8000**
@@ -136,7 +154,7 @@ Swagger API interaktiv hujjatlari:
 
 ---
 
-## 🧪 Avtomatlashtirilgan Testlarni Ishga Tushirish
+## 🧪 Avtomatlashtirilgan Testlar Natijasi
 
 Tizim barcha modullarni (Autentifikatsiya, Talabalar CRUD, HEMIS GPA formulasi, Davomat, Moliya, PDF va Excel generatsiyasi, HTTP API lar) qamrab oluvchi 25 ta avtomatlashtirilgan test bilan ta'minlangan.
 
@@ -153,7 +171,7 @@ python -m pytest tests -v
 maddikor/
 ├── app/
 │   ├── main.py                  # Asosiy FastAPI ilovasi va marshrutlar
-│   ├── database.py              # SQLite ulanishi, jadvallar va indekslar
+│   ├── database.py              # SQLite ulanishi, jadvallar va indekslar (DB_PATH moslashuvchan)
 │   ├── auth.py                  # Xavfsiz PBKDF2 parollash, sessiyalar
 │   ├── models.py                # Pydantic ma'lumot modellari
 │   ├── templates_helper.py      # Shablon render qilish yordamchisi
@@ -183,9 +201,14 @@ maddikor/
 │   │   └── js/app.js            # Toast xabarlar, modal yordamchilari
 │   └── templates/               # Jinja2 HTML shablonlari
 ├── tests/                       # Pytest testlar to'plami (25 ta test)
+├── Procfile                     # Railway / Heroku ishga tushirish fayli
+├── railway.json                 # Railway platformasi konfiguratsiyasi
+├── nixpacks.toml                # Railway Nixpacks builder konfiguratsiyasi
+├── Dockerfile                   # Docker konteyner fayli
+├── .dockerignore                # Docker e'tiborsiz qoldiradigan fayllar
+├── runtime.txt                  # Python versiyasi
 ├── seed_data.py                 # Namunaviy OTM ma'lumotlari generatori
-├── run.py                       # Bir bosishda ishga tushirish skripti
-├── requirements.txt             # Kerakli kutubxonalar ro'yxati
-└── README.md                    # Loyiha hujjatlari
+├── run.py                       # Bir bosishda ishga tushirish skripti (HOST va PORT dinamik)
+├── requirements.txt             # Kerakli kutubxonalar ro'yxati (gunicorn qo'shilgan)
+└── README.md                    # Loyiha hujjatlari va Railway yo'riqnomasi
 ```
-
