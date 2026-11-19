@@ -68,46 +68,7 @@
                 <span>Tizimga kirish</span>
             </button>
         </form>
-
-        <!-- Quick Demo Logins -->
-        <div class="mt-6 pt-6 border-t border-slate-100">
-            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider text-center mb-3">
-                Tezkor demo loginlar
-            </p>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-                <button type="button" onclick="fillDemo('admin', 'admin123')" 
-                        class="p-2 rounded-lg bg-slate-100 hover:bg-purple-50 hover:text-purple-700 border border-slate-200 text-slate-700 font-medium transition text-left">
-                    <span class="block font-bold">👑 Administrator</span>
-                    <span class="text-slate-400">admin / admin123</span>
-                </button>
-
-                <button type="button" onclick="fillDemo('dekan', 'dekan123')" 
-                        class="p-2 rounded-lg bg-slate-100 hover:bg-amber-50 hover:text-amber-700 border border-slate-200 text-slate-700 font-medium transition text-left">
-                    <span class="block font-bold">🏛️ Dekanat</span>
-                    <span class="text-slate-400">dekan / dekan123</span>
-                </button>
-
-                <button type="button" onclick="fillDemo('teacher', 'teacher123')" 
-                        class="p-2 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 text-slate-700 font-medium transition text-left">
-                    <span class="block font-bold">👨‍🏫 O'qituvchi</span>
-                    <span class="text-slate-400">teacher / teacher123</span>
-                </button>
-
-                <button type="button" onclick="fillDemo('39522110001', 'student123')" 
-                        class="p-2 rounded-lg bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200 text-slate-700 font-medium transition text-left">
-                    <span class="block font-bold">🎓 Talaba Kabineti</span>
-                    <span class="text-slate-400">39522110001 / ...</span>
-                </button>
-            </div>
-        </div>
     </div>
 </div>
-
-<script>
-function fillDemo(user, pass) {
-    document.getElementById('username').value = user;
-    document.getElementById('password').value = pass;
-}
-</script>
 {% endblock %}
 
